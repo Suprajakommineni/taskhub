@@ -5,7 +5,7 @@ import Projects from './pages/projects';
 import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
 import ProtectedRoute from './components/protectedroute';
-
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 import Tasks from './pages/tasks';
 
@@ -36,6 +36,7 @@ const App = () => {
         </Routes>
 
         <ToastContainer position="top-right" autoClose={3000} />
+        <SpeedInsights />
 
       </BrowserRouter>
 
