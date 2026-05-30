@@ -1,6 +1,6 @@
 import express from "express";
-import Task from "../models/task.ts";
-import verifyToken from "../middleware/auth.ts";
+import Task from "../models/task.js";
+import verifyToken from "../middleware/auth.js";
 
 const taskrouter = express.Router();
 
