@@ -5,6 +5,17 @@ import { check, validationResult } from 'express-validator';
 
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find(); // fetch all users
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({
+      message: error instanceof Error ? error.message : error,
+    });
+  }
+});
+
 router.post("/register", 
     [check("firstName", "First name is required").isString().notEmpty(),check("lastName", "Last name is required").isString().notEmpty(),check("email", "Please include a valid email").isEmail(),check("password", "Password must be at least 6 characters").isLength({ min: 6 })],
     async(req: express.Request, res: express.Response) => {
