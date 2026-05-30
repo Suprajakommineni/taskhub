@@ -11,13 +11,13 @@ const projectSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true, // ✅ removes accidental spaces
+      trim: true, // ✅ removes extra spaces
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true, // ✅ ensures fast lookups by userId
+      index: true, // ✅ speeds up queries by userId
     },
   },
   {
@@ -25,8 +25,9 @@ const projectSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Index for user-specific queries
-projectSchema.index({ userId: 1 });
+// ✅ Index for faster lookups by userId
+
 
 const Project = mongoose.model<ProjectType>("Project", projectSchema);
+
 export default Project;

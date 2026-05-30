@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true , unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
   },
   {
@@ -29,7 +29,7 @@ userSchema.pre("save", async function () {
 });
 
 // ✅ Index on email for fast lookups
-userSchema.index({ email: 1 });
+
 
 const User = mongoose.model<Usertype>("User", userSchema);
 export default User;

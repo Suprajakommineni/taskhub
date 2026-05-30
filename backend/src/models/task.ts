@@ -41,10 +41,6 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Index for project-specific queries
-taskSchema.index({ projectId: 1 });
-// ✅ Index for completed status queries
-taskSchema.index({ completed: 1 });
 
 const Task = mongoose.model<TaskType>("Task", taskSchema);
 export default Task;
