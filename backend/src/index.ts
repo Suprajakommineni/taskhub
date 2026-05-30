@@ -23,6 +23,10 @@ app.use("/users", router);
 app.use("/users", loginRouter);
 app.use("/projects", projectrouter);
 app.use("/tasks", taskrouter);
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
+
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
