@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   useMutation,
   useQuery,
@@ -15,8 +15,7 @@ type Project = {
 
 const Projects = () => {
   const [name, setName] = useState("");
-  const [editingProjectId, setEditingProjectId] =
-    useState<string | null>(null);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -29,12 +28,13 @@ const Projects = () => {
   } = useQuery<Project[]>({
     queryKey: ["projects"],
     queryFn: apiclient.getProjects,
+    staleTime: 60 * 1000, // ✅ cache for 1 minute to avoid unnecessary re-fetches
   });
 
   // ================= CREATE PROJECT =================
   const createMutation = useMutation({
     mutationFn: apiclient.createProject,
-    onSuccess: () => {
+    onSettled: () => {
       setName("");
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
@@ -49,8 +49,7 @@ const Projects = () => {
       projectId: string;
       formData: { name: string };
     }) => apiclient.updateProject(projectId, formData),
-
-    onSuccess: () => {
+    onSettled: () => {
       setName("");
       setEditingProjectId(null);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -60,43 +59,52 @@ const Projects = () => {
   // ================= DELETE PROJECT =================
   const deleteMutation = useMutation({
     mutationFn: apiclient.deleteProject,
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 
   // ================= SUBMIT =================
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!name.trim()) return;
 
-    if (editingProjectId) {
-      updateMutation.mutate({
-        projectId: editingProjectId,
-        formData: { name },
-      });
-    } else {
-      createMutation.mutate({ name });
-    }
-  };
+      if (editingProjectId) {
+        updateMutation.mutate({
+          projectId: editingProjectId,
+          formData: { name },
+        });
+      } else {
+        createMutation.mutate({ name });
+      }
+    },
+    [name, editingProjectId, createMutation, updateMutation]
+  );
 
   // ================= DELETE =================
-  const handleDelete = (projectId: string) => {
-    if (window.confirm("Delete this project?")) {
-      deleteMutation.mutate(projectId);
-    }
-  };
+  const handleDelete = useCallback(
+    (projectId: string) => {
+      if (window.confirm("Delete this project?")) {
+        deleteMutation.mutate(projectId);
+      }
+    },
+    [deleteMutation]
+  );
 
   // ================= EDIT =================
-  const handleEdit = (project: Project) => {
+  const handleEdit = useCallback((project: Project) => {
     setName(project.name);
     setEditingProjectId(project._id);
-  };
+  }, []);
 
   // ================= OPEN TASKS =================
-  const handleOpenTasks = (projectId: string) => {
-    navigate(`/tasks/${projectId}`);
-  };
+  const handleOpenTasks = useCallback(
+    (projectId: string) => {
+      navigate(`/tasks/${projectId}`);
+    },
+    [navigate]
+  );
 
   // ================= LOADING =================
   if (isLoading) {
@@ -118,7 +126,6 @@ const Projects = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-white to-purple-200 px-4 py-6 sm:px-8">
-
       {/* HEADER */}
       <div className="max-w-6xl mx-auto mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
@@ -174,7 +181,6 @@ const Projects = () => {
 
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-
           {projects?.map((project) => (
             <motion.div
               key={project._id}

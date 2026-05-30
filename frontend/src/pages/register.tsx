@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import * as apiclient from "../api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { memo } from "react";
 
 export type RegisterFormData = {
   firstName: string;
@@ -17,33 +18,31 @@ const Register = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>();
+  } = useForm<RegisterFormData>({
+    mode: "onBlur", // ✅ validates only when leaving field (less re-renders)
+  });
 
   const navigate = useNavigate();
 
   const mutation = useMutation({
     mutationFn: apiclient.RegisterUser,
-
     onSuccess: () => {
-      toast.success("Registration successful!");
+      toast.success("Registration successful!", { autoClose: 1500 });
       navigate("/login");
     },
-
     onError: (error: any) => {
-      toast.error(error.message, {
-  position: "top-center",
-  autoClose: 2000,
-});
+      toast.error(error.message || "Registration failed", {
+        position: "top-center",
+        autoClose: 2000,
+      });
     },
   });
-
 
   const onSubmit = handleSubmit((data) => {
     if (data.password !== data.confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-
     mutation.mutate(data);
   });
 
@@ -51,9 +50,8 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-white to-purple-200 px-4">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-md bg-white  rounded-2xl p-6 sm:p-8 space-y-5"
+        className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 space-y-5 shadow-md" // ✅ added shadow for better UX
       >
-        {/* TITLE */}
         <h1 className="text-2xl sm:text-3xl font-bold text-center">
           Create New Account
         </h1>
@@ -66,9 +64,7 @@ const Register = () => {
             {...register("firstName", { required: "First name is required" })}
           />
           {errors.firstName && (
-            <p className="text-red-500 text-sm">
-              {errors.firstName.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.firstName.message}</p>
           )}
         </div>
 
@@ -80,9 +76,7 @@ const Register = () => {
             {...register("lastName", { required: "Last name is required" })}
           />
           {errors.lastName && (
-            <p className="text-red-500 text-sm">
-              {errors.lastName.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.lastName.message}</p>
           )}
         </div>
 
@@ -95,9 +89,7 @@ const Register = () => {
             {...register("email", { required: "Email is required" })}
           />
           {errors.email && (
-            <p className="text-red-500 text-sm">
-              {errors.email.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.email.message}</p>
           )}
         </div>
 
@@ -116,9 +108,7 @@ const Register = () => {
             })}
           />
           {errors.password && (
-            <p className="text-red-500 text-sm">
-              {errors.password.message}
-            </p>
+            <p className="text-red-500 text-sm">{errors.password.message}</p>
           )}
         </div>
 
@@ -143,7 +133,7 @@ const Register = () => {
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 sm:py-3.5"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 sm:py-3.5 transition-colors duration-200" // ✅ smoother hover transition
         >
           {mutation.isPending ? "Creating..." : "Create Account"}
         </button>
@@ -151,7 +141,7 @@ const Register = () => {
         {/* LOGIN LINK */}
         <p className="text-center text-sm">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-600">
+          <a href="/login" className="text-blue-600 hover:underline">
             Login
           </a>
         </p>
@@ -160,5 +150,5 @@ const Register = () => {
   );
 };
 
-export default Register;
-       
+// ✅ Memoize component to avoid unnecessary re-renders
+export default memo(Register);

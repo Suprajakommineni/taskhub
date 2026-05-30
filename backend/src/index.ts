@@ -6,12 +6,18 @@ import router from "./routes/users.js";
 import loginRouter from "./routes/login.js";
 import projectrouter from "./routes/project.js";
 import taskrouter from "./routes/tasks.js";
+import User from "./models/user.js";
 
 
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Could not connect to MongoDB", err));
+  .then(async () => {
+    console.log("Connected to MongoDB");
+    await User.syncIndexes();   // builds indexes from schema
+    console.log(" Indexes synced");
+  })
+  .catch((err) => console.error(" Could not connect to MongoDB", err));
+
 
 const app = express();
 app.use(express.json());

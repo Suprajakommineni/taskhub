@@ -20,7 +20,6 @@ router.post("/", verifyToken, async (req, res) => {
 
     res.status(201).json(project);
   } catch (error) {
-    console.log("Error creating project:", error);
     res.status(500).json({ message: "Error creating project" });
   }
 });
@@ -32,11 +31,11 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
 
-    const projects = await Project.find({ userId });
+    // ✅ Use lean() for faster plain JSON results
+    const projects = await Project.find({ userId }).lean();
 
     res.json(projects);
   } catch (error) {
-    console.log("Error fetching projects:", error);
     res.status(500).json({ message: "Error fetching projects" });
   }
 });
@@ -48,10 +47,11 @@ router.get("/:id", verifyToken, async (req, res) => {
   try {
     const userId = (req as any).user.id;
 
+    // ✅ Use lean() for faster lookup
     const project = await Project.findOne({
       _id: req.params.id,
       userId,
-    });
+    }).lean();
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -59,7 +59,6 @@ router.get("/:id", verifyToken, async (req, res) => {
 
     res.json(project);
   } catch (error) {
-    console.log("Error fetching project:", error);
     res.status(500).json({ message: "Error fetching project" });
   }
 });
@@ -75,7 +74,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       { _id: req.params.id, userId },
       { name: req.body.name },
       { new: true }
-    );
+    ).lean(); // ✅ lean for lighter response
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -83,7 +82,6 @@ router.put("/:id", verifyToken, async (req, res) => {
 
     res.json(project);
   } catch (error) {
-    console.log("Error updating project:", error);
     res.status(500).json({ message: "Error updating project" });
   }
 });
@@ -98,7 +96,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const project = await Project.findOneAndDelete({
       _id: req.params.id,
       userId,
-    });
+    }).lean(); // ✅ lean for lighter response
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -106,7 +104,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
     res.json({ message: "Project deleted successfully" });
   } catch (error) {
-    console.log("Error deleting project:", error);
     res.status(500).json({ message: "Error deleting project" });
   }
 });

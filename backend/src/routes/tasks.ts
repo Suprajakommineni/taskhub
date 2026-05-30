@@ -21,7 +21,6 @@ taskrouter.post("/", verifyToken, async (req, res) => {
 
     return res.status(201).json(task);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ msg: "Failed to create task" });
   }
 });
@@ -29,18 +28,17 @@ taskrouter.post("/", verifyToken, async (req, res) => {
 // ================= GET TASKS =================
 taskrouter.get("/:projectId", verifyToken, async (req, res) => {
   try {
-    const tasks = await Task.find({
-      projectId: req.params.projectId,
-    });
+    // ✅ Use lean() for faster plain JSON results
+    const tasks = await Task.find({ projectId: req.params.projectId }).lean();
 
     return res.status(200).json(tasks);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ msg: "Failed to fetch tasks" });
   }
 });
 
-// ================= UPDATE TASK (FIXED) =================
+// ================= UPDATE TASK =================
+// ================= UPDATE TASK =================
 taskrouter.put("/:taskId", verifyToken, async (req, res) => {
   try {
     const { title, priority, completed, dueDate } = req.body;
@@ -53,26 +51,27 @@ taskrouter.put("/:taskId", verifyToken, async (req, res) => {
         ...(completed !== undefined && { completed }),
         ...(dueDate !== undefined && { dueDate }),
       },
-      { new: true }
-    );
+      { returnDocument: 'after' }   // ✅ replace new:true with this
+    ).lean(); // lean for lighter response
 
     return res.status(200).json(updatedTask);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ msg: "Failed to update task" });
   }
 });
 
+
 // ================= DELETE TASK =================
 taskrouter.delete("/:taskId", verifyToken, async (req, res) => {
   try {
-    await Task.findByIdAndDelete(req.params.taskId);
+    const deletedTask = await Task.findByIdAndDelete(req.params.taskId).lean();
 
-    return res.status(200).json({
-      msg: "Task deleted",
-    });
+    if (!deletedTask) {
+      return res.status(404).json({ msg: "Task not found" });
+    }
+
+    return res.status(200).json({ msg: "Task deleted" });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ msg: "Failed to delete task" });
   }
 });
