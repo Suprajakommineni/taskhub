@@ -23,8 +23,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:5173", // dev
-    "https://taskhub-bice-three.vercel.app", // old Vercel domain
-    "https://taskhub-pi-five.vercel.app"     // new Vercel domain
+    "https://taskhub-9ymh.vercel.app"    // new Vercel domain
   ],
   credentials: true
 }));
