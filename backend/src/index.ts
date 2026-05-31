@@ -21,11 +21,9 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: process.env.NODE_ENV === "production"
-    ? ["https://taskhub-lfay.vercel.app"]
-    : "*",
-  credentials: true
+  origin: "*"
 }));
+
 
 app.use(express.urlencoded({extended: true}));
 
